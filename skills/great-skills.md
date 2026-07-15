@@ -5,6 +5,7 @@
 npx skills add https://github.com/vercel-labs/skills --skill find-skills
 npx skills add https://github.com/obra/superpowers --skill brainstorming
 npx skills add https://github.com/kepano/obsidian-skills --skill obsidian-markdown
+npx skills add https://github.com/dietrichgebert/ponytail --skill ponytail
 
 npx skills add https://github.com/mattpocock/skills --skill writing-great-skills
 npx skills add https://github.com/mattpocock/skills --skill grilling
