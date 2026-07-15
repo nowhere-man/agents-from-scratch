@@ -119,4 +119,4 @@ path/to/file.ext:L42 — 当前具体成本。behavior-preserving 的最小简�
 - 保留准确 file、line 和 symbol，不复述显而易见的 diff。
 - 删除客套、表扬、无意义 hedging 和 emoji。
 - Findings 后仅按需给出 Open Questions / Assumptions、简短 change summary 和 verification gaps。
-- 没有 finding 时明确说明，并列出无法验证的候选或 residual risk。
+- 没有 finding 时输出 `Lean already. Ship.` 并停止；若存在无法验证的候选或 residual risk，再附一行说明。
