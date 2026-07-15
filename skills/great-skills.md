@@ -1,4 +1,4 @@
-# greate skills
+# great skills
 
 ```bash
 
@@ -11,4 +11,6 @@ npx skills add https://github.com/mattpocock/skills --skill diagnosing-bugs
 npx skills add https://github.com/mattpocock/skills --skill request-refactor-plan
 npx skills add https://github.com/mattpocock/skills --skill codebase-design
 npx skills add https://github.com/mattpocock/skills --skill improve-codebase-architecture
+
+npx skills add https://github.com/kepano/obsidian-skills --skill obsidian-markdown
 ```

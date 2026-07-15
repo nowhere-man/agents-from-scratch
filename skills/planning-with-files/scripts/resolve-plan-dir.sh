@@ -5,7 +5,7 @@
 #   1. $PLAN_ID env var → ./.planning/$PLAN_ID/ if exists
 #   2. ./.planning/.active_plan content → matching dir if exists
 #   3. Newest ./.planning/<dir>/ by mtime
-#   4. Otherwise empty stdout (caller falls back to legacy ./task_plan.md)
+#   4. Otherwise empty stdout
 #
 # Always exits 0. Never errors out the agent loop.
 #
@@ -18,26 +18,21 @@ set -u
 PLAN_ROOT="${1:-${PWD}/.planning}"
 ACTIVE_FILE="${PLAN_ROOT}/.active_plan"
 
-# Plan-id safe-identifier check. Rejects whitespace, path separators, leading
-# dots, and empty strings; accepts the YYYY-MM-DD-<slug> shape from
-# init-session.sh as well as legacy hand-created names like "alpha" or
-# "feature-foo". The intent is to filter garbage content (e.g. a corrupt
-# .active_plan file containing only whitespace or random text) without
-# enforcing a date prefix that would break backward compatibility.
-SLUG_RE='^[A-Za-z0-9_][A-Za-z0-9._-]*$'
+# Every plan lives at .planning/YYYY-MM-DD-<topic>/.
+PLAN_ID_RE='^[0-9]{4}-[0-9]{2}-[0-9]{2}-[^/[:space:]]+$'
 
-slug_is_valid() {
+plan_id_is_valid() {
     case "$1" in
         '') return 1 ;;
     esac
-    printf "%s" "$1" | grep -Eq "${SLUG_RE}"
+    printf "%s" "$1" | grep -Eq "${PLAN_ID_RE}"
 }
 
 # Portable path canonicalizer. realpath first (Linux, modern coreutils),
 # then readlink -f (older GNU), then python3/python os.path.realpath. Prints
 # the canonical absolute path on success; prints nothing and returns 1 on a
 # full miss so the caller can decide what to do. No python spawn on the happy
-# path: realpath/readlink cover Linux, WSL, Git-Bash, and modern macOS.
+# path: realpath/readlink cover Linux and modern macOS.
 canonicalize() {
     target="$1"
     if command -v realpath >/dev/null 2>&1; then
@@ -59,14 +54,8 @@ canonicalize() {
     return 1
 }
 
-# Containment guard (security A1.3): a resolved plan dir must canonicalize to a
-# path under the project root (the CWD the script runs from). A symlink inside
-# a valid slug dir pointing at /etc or outside the workspace would otherwise let
-# the hooks hash and inject an arbitrary file. On any violation we return 1 so
-# the caller treats the candidate as unresolved and falls back safely. If
-# canonicalization is unavailable for BOTH paths we fail open (return 0) to keep
-# legacy behavior byte-equivalent on minimal shells that lack realpath/readlink
-# and python; the SLUG_RE check already blocks traversal in the slug name.
+# A resolved plan dir must stay under the project root. A symlink inside a
+# valid slug dir must not redirect plan reads outside the workspace.
 is_within_root() {
     candidate="$1"
     root_real="$(canonicalize "${PWD}")" || root_real=""
@@ -107,9 +96,9 @@ mtime_of() {
 
 resolve_from_env() {
     plan_id="${PLAN_ID:-}"
-    slug_is_valid "${plan_id}" || return 1
+    plan_id_is_valid "${plan_id}" || return 1
     candidate="${PLAN_ROOT}/${plan_id}"
-    if [ -d "${candidate}" ] && is_within_root "${candidate}"; then
+    if plan_dir_is_valid "${candidate}"; then
         printf "%s\n" "${candidate}"
         return 0
     fi
@@ -119,9 +108,9 @@ resolve_from_env() {
 resolve_from_active_file() {
     [ -f "${ACTIVE_FILE}" ] || return 1
     plan_id="$(tr -d '\r\n[:space:]' < "${ACTIVE_FILE}")"
-    slug_is_valid "${plan_id}" || return 1
+    plan_id_is_valid "${plan_id}" || return 1
     candidate="${PLAN_ROOT}/${plan_id}"
-    if [ -d "${candidate}" ] && is_within_root "${candidate}"; then
+    if plan_dir_is_valid "${candidate}"; then
         printf "%s\n" "${candidate}"
         return 0
     fi
@@ -130,8 +119,7 @@ resolve_from_active_file() {
 
 resolve_latest_dir() {
     [ -d "${PLAN_ROOT}" ] || return 1
-    # Portable newest-mtime selector. Skips hidden dirs, slug-invalid names,
-    # and dirs without task_plan.md (e.g. sessions/).
+    # Portable newest-mtime selector. Skips invalid or incomplete plan dirs.
     latest=""
     latest_mtime=0
     for entry in "${PLAN_ROOT}"/*/; do
@@ -141,9 +129,8 @@ resolve_latest_dir() {
         case "${name}" in
             .*) continue ;;
         esac
-        slug_is_valid "${name}" || continue
-        [ -f "${clean}/task_plan.md" ] || continue
-        is_within_root "${clean}" || continue
+        plan_id_is_valid "${name}" || continue
+        plan_dir_is_valid "${clean}" || continue
         mtime="$(mtime_of "${clean}")"
         if [ "${mtime}" -gt "${latest_mtime}" ] 2>/dev/null; then
             latest_mtime="${mtime}"
@@ -155,6 +142,15 @@ resolve_latest_dir() {
         return 0
     fi
     return 1
+}
+
+plan_dir_is_valid() {
+    candidate="$1"
+    [ -d "${candidate}" ] || return 1
+    [ -f "${candidate}/task_plan.md" ] || return 1
+    [ -f "${candidate}/findings.md" ] || return 1
+    [ -f "${candidate}/progress.md" ] || return 1
+    is_within_root "${candidate}"
 }
 
 if resolve_from_env; then exit 0; fi

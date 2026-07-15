@@ -34,9 +34,14 @@ fi
 PLAN_ID="$1"
 PLAN_DIR="${PLAN_ROOT}/${PLAN_ID}"
 
-if [ ! -d "${PLAN_DIR}" ]; then
+if ! printf '%s' "${PLAN_ID}" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}-[^/[:space:]]+$'; then
+    echo "Error: plan id must match YYYY-MM-DD-<topic>: ${PLAN_ID}" >&2
+    exit 1
+fi
+
+if [ ! -f "${PLAN_DIR}/task_plan.md" ] || [ ! -f "${PLAN_DIR}/findings.md" ] || [ ! -f "${PLAN_DIR}/progress.md" ]; then
     echo "Error: plan directory not found: ${PLAN_DIR}" >&2
-    echo "Run: init-session.sh \"${PLAN_ID}\" to create it, or check .planning/ for available plans." >&2
+    echo "Run init-session.sh <topic>, or check .planning/ for available plans." >&2
     exit 1
 fi
 

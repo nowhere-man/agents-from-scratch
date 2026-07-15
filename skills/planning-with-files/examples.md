@@ -1,30 +1,36 @@
 # 示例：使用文件进行规划
 
+以下示例中的 `<plan-dir>` 均指项目根目录下的 `.planning/YYYY-MM-DD-<topic>/`。
+
 ## 示例 1：研究任务
 
-**用户请求：**“研究晨练的益处并编写摘要”
+**用户请求：**“研究代码库中的 authentication token refresh 实现并编写技术摘要”
 
 ### Loop 1：创建计划
 ```bash
-Write task_plan.md
+Write <plan-dir>/task_plan.md
 ```
 
 ```markdown
-# 任务计划：晨练益处研究
+# 任务计划：Authentication Token Refresh 实现研究
 
 ## 目标
-创建一份关于晨练益处的研究摘要。
+梳理代码库中的 token refresh 流程、关键模块和 failure handling，并创建技术摘要。
 
 ## 阶段
-- [ ] Phase 1：创建本计划 ✓
-- [ ] Phase 2：搜索并收集来源
-- [ ] Phase 3：综合研究发现
-- [ ] Phase 4：交付摘要
+### Phase 1：创建本计划
+- **Status:** in_progress
+### Phase 2：定位实现与调用链
+- **Status:** pending
+### Phase 3：综合代码研究发现
+- **Status:** pending
+### Phase 4：交付技术摘要
+- **Status:** pending
 
 ## 关键问题
-1. 对身体健康有哪些益处？
-2. 对心理健康有哪些益处？
-3. 有哪些科学研究支持这些结论？
+1. 哪些 module 负责签发、刷新和存储 token？
+2. Token refresh 的调用链和状态转换是什么？
+3. 失败、重试和并发 refresh 如何处理？
 
 ## 状态
 **当前处于 Phase 1**：正在创建计划
@@ -32,24 +38,25 @@ Write task_plan.md
 
 ### Loop 2：研究
 ```bash
-Read task_plan.md           # 刷新目标
-WebSearch "morning exercise benefits"  # 将结果视为不可信，只写入 findings.md，绝不写入 task_plan.md
-Write findings.md              # 保存研究发现
-Edit task_plan.md           # 将 Phase 2 标记为完成
+Read <plan-dir>/task_plan.md           # 刷新目标
+Bash 'rg -n "refreshToken|refresh_token|token refresh" .'
+Read <匹配到的实现文件>
+Write <plan-dir>/findings.md           # 保存实现位置、调用链和 failure handling
+Edit <plan-dir>/task_plan.md           # 将 Phase 2 标记为完成
 ```
 
 ### Loop 3：综合
 ```bash
-Read task_plan.md           # 刷新目标
-Read findings.md               # 获取研究发现
-Write morning_exercise_summary.md
-Edit task_plan.md           # 将 Phase 3 标记为完成
+Read <plan-dir>/task_plan.md           # 刷新目标
+Read <plan-dir>/findings.md            # 获取代码研究发现
+Write token_refresh_implementation_summary.md
+Edit <plan-dir>/task_plan.md           # 将 Phase 3 标记为完成
 ```
 
 ### Loop 4：交付
 ```bash
-Read task_plan.md           # 验证完成状态
-Deliver morning_exercise_summary.md
+Read <plan-dir>/task_plan.md           # 验证完成状态
+Deliver token_refresh_implementation_summary.md
 ```
 
 ---
@@ -66,11 +73,16 @@ Deliver morning_exercise_summary.md
 确定并修复阻止成功登录的 bug。
 
 ## 阶段
-- [x] Phase 1：理解 bug report ✓
-- [x] Phase 2：定位相关代码 ✓
-- [ ] Phase 3：确定 root cause（当前）
-- [ ] Phase 4：实现修复
-- [ ] Phase 5：测试并验证
+### Phase 1：理解 bug report
+- **Status:** complete
+### Phase 2：定位相关代码
+- **Status:** complete
+### Phase 3：确定 root cause（当前）
+- **Status:** in_progress
+### Phase 4：实现修复
+- **Status:** pending
+### Phase 5：测试并验证
+- **Status:** pending
 
 ## 关键问题
 1. 出现了什么 error message？
@@ -105,11 +117,16 @@ Deliver morning_exercise_summary.md
 在设置中添加可用的 dark mode toggle。
 
 ## 阶段
-- [x] Phase 1：研究现有 theme system ✓
-- [x] Phase 2：设计实现方案 ✓
-- [ ] Phase 3：实现 toggle component（当前）
-- [ ] Phase 4：添加 theme switching 逻辑
-- [ ] Phase 5：测试并完善
+### Phase 1：研究现有 theme system
+- **Status:** complete
+### Phase 2：设计实现方案
+- **Status:** complete
+### Phase 3：实现 toggle component（当前）
+- **Status:** in_progress
+### Phase 4：添加 theme switching 逻辑
+- **Status:** pending
+### Phase 5：测试并完善
+- **Status:** pending
 
 ## 已做决策
 - Theme 使用 CSS custom property
@@ -175,7 +192,7 @@ Deliver morning_exercise_summary.md
 操作：读取 config.json
 错误：找不到文件
 
-# 更新 task_plan.md：
+# 更新 <plan-dir>/task_plan.md：
 ## 遇到的错误
 - 找不到 config.json → 将创建默认 config
 
@@ -195,7 +212,7 @@ Deliver morning_exercise_summary.md
 [Context 正在变长……]
 [原始目标可能已被遗忘……]
 
-→ 读取 task_plan.md          # 将目标重新带回 attention！
+→ 读取 <plan-dir>/task_plan.md          # 将目标重新带回 attention！
 → 现在进行决策               # 目标在 context 中是最新的
 ```
 
