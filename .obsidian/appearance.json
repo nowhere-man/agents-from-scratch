@@ -2,5 +2,6 @@
   "baseFontSizeAction": true,
   "translucency": false,
   "cssTheme": "Obsidian Nord",
-  "accentColor": "#5cf5a6"
+  "accentColor": "#5cf5a6",
+  "nativeMenus": true
 }

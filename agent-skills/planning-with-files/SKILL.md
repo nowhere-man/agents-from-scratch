@@ -156,9 +156,9 @@ if action_failed:
 
 复制以下模板开始工作：
 
-- [templates/task_plan.md](templates/task_plan.md)：阶段跟踪
-- [templates/findings.md](templates/findings.md)：研究存储
-- [templates/progress.md](templates/progress.md)：Session 记录
+- [templates/task_plan.md](task_plan.md)：阶段跟踪
+- [templates/findings.md](findings.md)：研究存储
+- [templates/progress.md](progress.md)：Session 记录
 
 ## Scripts
 

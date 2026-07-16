@@ -134,19 +134,19 @@ description: Prompt engineering：设计新 prompt、诊断已有 prompt 的失�
 
 ## Prompt Patterns
 
-需要 `few-shot`、`structured output`、`multimodal`、`task decomposition`、`prompt chaining`、确定性 `post-processing`，或处理这些模式的失败恢复时，必须读取 [patterns.md](references/patterns.md)。
+需要 `few-shot`、`structured output`、`multimodal`、`task decomposition`、`prompt chaining`、确定性 `post-processing`，或处理这些模式的失败恢复时，必须读取 [patterns.md](patterns.md)。
 
 ## Long Context 与消息分层
 
-设计 system/developer/user 分层，或输入包含 `long context`、多文件、大量代码和数据时，必须读取 [long-context.md](references/long-context.md)。
+设计 system/developer/user 分层，或输入包含 `long context`、多文件、大量代码和数据时，必须读取 [long-context.md](long-context.md)。
 
 ## Runtime：Retrieval、State 与 Tool Calling
 
-需要筛选或 `retrieval` 上下文、维护多轮状态、处理 `context compaction` 和恢复、设计 `tool calling`、审批或授权边界时，必须读取 [runtime.md](references/runtime.md)。
+需要筛选或 `retrieval` 上下文、维护多轮状态、处理 `context compaction` 和恢复、设计 `tool calling`、审批或授权边界时，必须读取 [runtime.md](runtime.md)。
 
 ## Eval 与发布
 
-需要量化 `eval`、`A/B test`、版本管理或生产发布流程时，必须读取 [evaluation.md](references/evaluation.md)。
+需要量化 `eval`、`A/B test`、版本管理或生产发布流程时，必须读取 [evaluation.md](evaluation.md)。
 
 ## 约束
 
