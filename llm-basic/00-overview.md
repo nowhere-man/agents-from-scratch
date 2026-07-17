@@ -1,9 +1,11 @@
 ---
-title: 面向 Agent 开发的 LLM 基础认知
+title: 面向 Agent 开发的 LLM 基础
 aliases:
   - LLM 基础总览
+  - 大模型原理学习路径
 tags:
   - llm-basic
+  - agent
 status: active
 created: 2026-07-17
 last_reviewed: 2026-07-17
@@ -11,95 +13,132 @@ sources:
   - "[[99-technology-map-and-sources]]"
 ---
 
-# 面向 Agent 开发的 LLM 基础认知
+# 面向 Agent 开发的 LLM 基础
 
-> [!important] 一句话核心
-> LLM 是在给定上下文条件下生成最可能后续 token 的概率模型；擅长语义理解、归纳和生成，但不是可靠的数据库、计算器、状态机或执行器。
-   Agent 的可靠性来自LLM以外的上下文、工具、代码、状态、权限和评估。
+> [!abstract] 这套笔记要建立的认知
+> 先理解现代大模型内部怎样计算，再理解一个基础模型怎样经过后训练成为 Assistant Model，最后解释它的能力为什么出现、为什么必然存在边界，以及 Agent 系统应当怎样正确使用它。
 
-## 目标
+## 学习目标
 
-开发 Agent 时，最危险的两种误解是：
-+ 把模型当成人
-+ 把模型当成确定性 API。
-前者会过度相信它“理解、记住、知道或已经做了”；后者会忽略同一输入下输出会变化、上下文会退化、工具参数会错、模型版本会回归。
+读完后，你应能准确回答五个问题：
 
-正确的工作模型是：**LLM 负责概率性的语义判断；系统负责事实、确定性、外部动作、长期状态和风险控制。**
+1. 一个 token 从输入到生成下一个 token，经历了哪些计算？
+2. 原始 Transformer 的哪些部分仍然是主干，哪些部分已被优化、替换或绕开？
+3. Agent API 背后的 Assistant Model 是怎样从数据、预训练和后训练得到的？
+4. 语言、知识、推理、指令遵循和工具调用能力分别从哪里来，又会在哪里失效？
+5. 设计 Agent 时，模型、工具、代码、状态、权限和人工应当怎样分工？
 
-| 需求               | 优先交给                      | 不能只依赖模型的原因                   |
-| ---------------- | ------------------------- | ---------------------------- |
-| 理解意图、归纳材料、生成候选方案 | LLM                       | 这是它的优势，但结果仍需按任务风险验证          |
-| 最新或私有事实          | Retrieval / 数据库 / 实时 tool | 参数中的知识有截止时间，且不能按来源检索         |
-| 计算、排序、去重、权限判断    | Code / schema / policy    | 概率生成不提供确定性保证                 |
-| 外部写入和不可逆动作       | Tool + 服务器端授权             | 模型的 tool call 只是请求，不是执行证明    |
-| 跨轮任务进度和关键决策      | 持久化 state                 | context window 不是可靠、可查询的长期记忆 |
-| 高风险或证据不充分判断      | 人工审核                      | 模型置信表达通常未校准，也可能编造依据          |
+这不是模型训练实操教程，也不比较具体产品。公式用于准确表达计算关系，不做数学推导。动态技术以截至 2026-07 的技术路线为边界；具体产品规格不属于本系列。
 
-## 从模型到 Agent
-
+## 整体认知链
 
 ```mermaid
 flowchart LR
-    U["用户和任务"] --> C["受控上下文"]
-    R["Retrieval / 可信数据"] --> C
-    C --> M["LLM：概率性语义判断"]
-    M --> V{"可机械验证？"}
-    V -->|"是"| K["Schema / Code / Policy"]
-    V -->|"否或高风险"| H["人工审核或请求澄清"]
-    K --> T["受权 Tool 执行"]
-    T --> S["持久化真实状态"]
-    S --> C
+    A["原始数据"] --> B["Tokenizer 与训练样本"]
+    B --> C["预训练"]
+    C --> D["Base Model"]
+    D --> E["指令、偏好、推理与安全后训练"]
+    E --> F["Assistant Model"]
+    F --> G["Agent Harness"]
+    G --> H["Agent Application"]
+
+    T["Transformer 与现代架构"] -.提供计算结构.-> C
+    R["工具、检索、状态、权限、验证"] -.提供外部可靠性.-> G
 ```
 
-图中的边界比 prompt 更重要：不可信文档、用户输入、tool 返回值，以及视频中的 OCR 文字、字幕和 ASR 转写都只是数据；它们不能自行改变系统规则或获得写权限。详见 [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]] 和 [[prompt-engineering/12-tools-state-and-authorization|工具、状态与授权边界]]。
+这条链上有三个不能混淆的层次：
+
+| 层次 | 它是什么 | 它不是什么 |
+|---|---|---|
+| 模型架构 | 把 token 和其他模态表示转换为下一个 token 概率的参数化计算图 | 一个会自行访问世界、保存状态和执行动作的应用 |
+| Assistant Model | 经过后训练、倾向于遵循指令和使用工具的模型 | Agent、权限系统、数据库或确定性程序 |
+| Agent Application | 模型与 context、tools、state、policy、validation、runtime 的组合 | 只靠一段复杂 prompt 驱动的聊天模型 |
 
 ## 阅读路径
 
-### 文本大模型
+### 第一部分：现代大模型的底层架构
 
-1. [[01-transformer-and-token-flow|Transformer、token 与信息流]]：模型如何把文本和位置变成可计算表示；Decoder-only 与 RoPE 为什么成为主流。
-2. [[02-training-alignment-and-behavior|训练、对齐与行为]]：预训练、SFT 和偏好优化为何使模型“像助手”，又为何不构成保证。
-3. [[03-context-memory-and-long-inputs|上下文窗口、记忆与长输入]]：context、参数、state、retrieval 的边界，以及长上下文的退化。
-4. [[04-inference-and-modern-architecture|推理与现代架构]]：采样、KV cache、GQA/MQA、MoE 与推测解码如何影响成本和延迟。
-5. [[05-text-capabilities-limits-and-verification|文本能力边界与验证]]：推理、幻觉、结构化输出和工具使用应如何进入可靠系统。
+1. [[01-token-embedding-and-transformer|Token、Embedding 与 Transformer]]：从输入字符串到下一个 token 概率的完整计算路径。
+2. [[02-modern-transformer-evolution|现代 Transformer 的模块演进]]：逐模块解释原始设计、现代优化与替代路线。
+3. [[03-inference-context-and-efficiency|推理、Context 与效率]]：prefill、decode、KV cache、长上下文、量化、批处理与推测解码。
 
-### 视频理解
+### 第二部分：Agent 使用的模型是怎么来的
 
-1. [[10-multimodal-video-input-and-fusion|视频输入与多模态融合]]：帧、音轨、字幕、OCR 如何变成模型的输入。
-2. [[11-video-temporal-reasoning-and-long-video|时序建模、推理与长视频]]：采样、压缩、定位、计数和长视频的根本限制。
-3. [[12-video-agent-reliability-and-architecture|视频 Agent 的可靠性与架构]]：如何把视频理解做成有证据、可验证、可人工复核的系统。
+4. [[04-from-data-to-base-model|从数据到基础模型]]：数据处理、训练目标、参数更新、scaling 与 Base Model。
+5. [[05-from-base-model-to-assistant-model|从基础模型到 Assistant Model]]：继续预训练、SFT、偏好优化、强化学习、安全后训练、蒸馏和评测。
 
-最后阅读 [[20-agent-design-decision-guide|Agent 设计决策指南]]，把模型知识转成架构选择；可变技术和产品信息在 [[99-technology-map-and-sources|技术地图与来源]] 中集中维护。
+### 第三部分：模型的能力、特点与边界
 
-## 四个必须建立的直觉
+6. [[06-capabilities-and-their-origins|模型能力及其来源]]：语言、知识、in-context learning、推理、代码与工具使用为何会出现。
+7. [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]：幻觉、知识限制、上下文退化、推理错误、提示敏感与不确定性。
 
-### 1. 生成合理文本，不等于掌握可靠事实
+### 第四部分：在 Agent 中正确使用模型
 
-模型从训练分布和当前上下文生成高概率延续。它可以在没有足够证据时给出流畅、细节丰富的回答；因此“不要幻觉”不是事实策略。事实任务必须规定允许证据、缺失值、引用和冲突处理。
+8. [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]：模型的正确角色、工具与状态边界、循环控制、权限、验证和评估。
 
-### 2. 大 context，不等于大记忆
+### 专项与索引
 
-context 是本次调用提供的有限工作区；模型参数是训练中压缩得到的统计规律；应用 state 是系统持久化的可查询记录。这三者不能互相替代。
+9. [[09-multimodal-language-models|多模态大模型专项]]：图像、音频、视频怎样进入同一模型，以及它们新增的观察与证据边界。
+10. [[99-technology-map-and-sources|技术地图与一手来源]]：稳定概念、演进路线及来源索引。
 
-### 3. 会调用工具，不等于已经执行
+## 贯穿全文的五个区分
 
-模型选择工具和填参数本身也是预测。程序必须验证参数、权限与幂等性，执行后读取真实结果，模型才可据此继续。
+### 参数知识、Context、Memory 与 State
 
-### 4. 输出像推理，不等于过程或结论都正确
+| 概念 | 存在位置 | 主要作用 |
+|---|---|---|
+| 参数知识 | 模型权重 | 保存训练数据中学到的统计规律 |
+| Context | 单次模型调用输入 | 为当前预测提供指令、材料、示例和历史 |
+| Memory | 应用的存储与检索层 | 跨调用保存并按需重新提供信息 |
+| State | 数据库、工作流或外部系统 | 记录任务真实进度和已经发生的动作 |
 
-模型可完成不少多步语义与符号任务，但会受问题表述、上下文、模型版本和采样影响。应要求可检查的依据、阶段产物或程序验证，而不是把解释文字当证明。
+> [!warning] Context 不是可靠长期记忆
+> 模型只能使用本次调用可见的信息。即使聊天系统把历史重新拼入 context，也不等于模型拥有可查询、可更新、无冲突的持久状态。
 
-## 最小检查表
+### 能力、行为倾向与系统保证
 
-- [ ] 能说清当前任务中模型只负责哪一个语义判断。
-- [ ] 已区分模型知识、当前 context、retrieval 结果和持久化 state。
-- [ ] 每一个事实、计算、外部动作和高风险结论都有模型之外的验证或失败路径。
-- [ ] 生产评估固定了模型/版本、prompt、工具、参数、测试输入和评分方式。
-- [ ] 视频任务已定义可用模态、统一时间基准，以及 `not_observed`、`insufficient_evidence` 和 `confirmed_negative` 的行为。
+- **能力**：模型在合适条件下可以完成某类任务。
+- **行为倾向**：后训练提高了某种输出出现的概率，例如遵循指令、拒绝危险请求或调用工具。
+- **系统保证**：由 schema、code、policy、authorization、transaction 和验证器强制成立的约束。
 
-## 相关笔记
+模型“通常会”不等于系统“保证会”。Agent 可靠性必须来自三者的正确组合。
 
-- [[20-agent-design-decision-guide|Agent 设计决策指南]]
-- [[prompt-engineering/00-overview|提示词工程总览]]
-- [[prompt-engineering/03-choose-the-right-lever|选择正确的工程杠杆]]
-- [[building-effective-agents|Building Effective Agents]]
+### 模型输出、工具请求与执行事实
+
+```text
+模型自然语言     = 候选内容
+模型 tool call   = 候选动作请求
+工具返回结果      = 外部执行事实
+持久化状态回读    = 系统当前事实
+```
+
+### 结构正确与语义正确
+
+结构化输出可以保证字段存在、类型有效、枚举合法，却不能保证字段中的事实真实、数字正确或动作得到授权。语法约束与业务验证是两层不同的问题。
+
+### 模型能力与推理系统效率
+
+Flash/分块 attention、continuous batching、prefix cache、paged KV cache 等主要让相同模型运行得更快或更省资源；训练数据、模型容量、后训练和推理时搜索更直接影响模型能完成什么。两类技术不能混为“模型变聪明”。
+
+## 推荐学习方法
+
+每篇笔记都按同一组问题阅读：
+
+1. 输入和输出分别是什么？
+2. 关键公式描述了哪一步计算？
+3. 这项技术解决的是表达能力、训练稳定性、显存、带宽、延迟还是可靠性？
+4. 它改变模型本身，还是只改变运行方式？
+5. 它对 Agent 的设计边界有什么影响？
+
+> [!tip] 不要背技术名词
+> 先找问题，再看技术改变了哪一步。只记住“某技术更快”没有用；应能说出它减少的是注意力中间矩阵、KV cache、激活参数、内存搬运还是串行解码轮次。
+
+## 完成标准
+
+- [ ] 能画出 Decoder-only Transformer 从 token 到 logits 的计算图。
+- [ ] 能解释 MHA、GQA/MQA、门控 FFN、MoE、RoPE、RMSNorm 各自改变了什么。
+- [ ] 能区分架构优化、推理服务优化和推理时计算扩展。
+- [ ] 能讲清 Base Model 到 Assistant Model 的完整生产链及每个节点的作用。
+- [ ] 能把主要能力对应到预训练、后训练、context 或外部工具。
+- [ ] 能从生成目标解释幻觉，而不是把它当成偶发 bug。
+- [ ] 能说明为什么 Assistant Model 不是 Agent，以及哪些职责必须留在模型之外。
