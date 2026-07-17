@@ -103,6 +103,10 @@ Prompt 改得更长或读起来更清楚，不代表模型表现更好。使用�
 2. [[02-minimum-effective-prompt|最小有效 Prompt]]：建立最简单可验证的 baseline。
 3. [[03-choose-the-right-lever|选择正确的工程杠杆]]：把问题交给正确机制。
 
+### 进阶：推理增强
+
+当直接 baseline 在多步推理、搜索、计算或外部观察任务上经 eval 证明不足时，阅读 [[04-reasoning-strategies|推理增强策略]]。先根据失败选择机制，不把技巧无条件叠加到所有 prompt。
+
 ### 第二层：进入生产系统
 
 1. [[10-context-and-instruction-architecture|上下文与指令架构]]
@@ -126,4 +130,4 @@ Prompt 改得更长或读起来更清楚，不代表模型表现更好。使用�
 
 + [OpenAI](https://developers.openai.com/api/docs/guides/prompt-engineering)
 + [Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview)
-+ [Google Gemini](https://ai.google.dev/gemini-api/docs/prompting-strategies) 
++ [Google Gemini](https://ai.google.dev/gemini-api/docs/prompting-strategies)

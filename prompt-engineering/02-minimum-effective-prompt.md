@@ -108,7 +108,7 @@ Few-shot 适合直接指令难以稳定表达的判断边界、格式或风格�
 - 对事实结论给出来源引用。
 - 对最终结果执行独立规则校验。
 
-需要拆解时，详见 [[13-decomposition-and-agent-workflows|任务拆解与 Agent 工作流]]。
+需要判断 CoT、Least-to-Most、Self-Consistency、ToT、Step-Back 或工具增强是否适用时，先阅读 [[04-reasoning-strategies|推理增强策略]]；需要把策略实现为可恢复的多步系统时，详见 [[13-decomposition-and-agent-workflows|任务拆解与 Agent 工作流]]。
 
 ## Prompt 中的正向与禁止规则
 
@@ -160,5 +160,5 @@ Few-shot 适合直接指令难以稳定表达的判断边界、格式或风格�
 - [[00-overview|提示词工程总览]]
 - [[01-task-contract|任务契约]]
 - [[03-choose-the-right-lever|选择正确的工程杠杆]]
+- [[04-reasoning-strategies|推理增强策略]]
 - [[14-evaluation-and-iteration|Prompt 评估与迭代]]
-

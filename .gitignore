@@ -3,6 +3,8 @@
 .claude/
 .planning/
 
+docs/
+
 # obsidian
 .obsidian/workspace.json
 
