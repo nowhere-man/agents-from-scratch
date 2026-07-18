@@ -6,12 +6,13 @@ description: >
   task needs to exist at all (YAGNI), reach for the standard library before
   custom code, native platform features before dependencies, one line before
   fifty. Supports intensity levels: lite, full (default), ultra. Use only when
-  the user explicitly asks to write, add, implement, refactor, fix, or otherwise
-  modify code. This includes requests that also say "ponytail", "be lazy", "lazy
-  mode", "simplest solution", "minimal solution", "yagni", "do less", or
-  "shortest path", or complain about over-engineering, bloat, boilerplate, or
-  unnecessary dependencies. Do NOT invoke for code review, analysis, planning,
-  design, dependency selection, or other non-editing requests.
+  the user explicitly asks to write, add, implement, refactor, fix, design an
+  implementation or modification plan for, or otherwise modify code. This
+  includes requests that also say "ponytail", "be lazy", "lazy mode", "simplest
+  solution", "minimal solution", "yagni", "do less", or "shortest path", or
+  complain about over-engineering, bloat, boilerplate, or unnecessary
+  dependencies. Do NOT invoke for code review, general analysis, non-code
+  planning or design, dependency selection, or other non-editing requests.
 argument-hint: "[lite|full|ultra]"
 ---
 

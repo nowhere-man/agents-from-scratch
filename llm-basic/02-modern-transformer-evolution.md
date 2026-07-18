@@ -2,11 +2,9 @@
 title: 现代 Transformer 的模块演进
 aliases:
   - Transformer 现代架构
-  - Transformer 模块优化
 tags:
   - llm-basic
   - transformer
-  - architecture
 status: active
 created: 2026-07-17
 last_reviewed: 2026-07-17

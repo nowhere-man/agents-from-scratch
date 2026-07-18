@@ -2,10 +2,8 @@
 title: 面向 Agent 开发的 LLM 基础
 aliases:
   - LLM 基础总览
-  - 大模型原理学习路径
 tags:
   - llm-basic
-  - agent
 status: active
 created: 2026-07-17
 last_reviewed: 2026-07-17

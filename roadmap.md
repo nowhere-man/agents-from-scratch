@@ -4,66 +4,6 @@ type: Roadmap
 
 # AI Agents Roadmap
 
-## LLM 基础
-
-目标：知道 LLM 为什么能工作、为什么会错、能力边界在哪。
-
-- **Transformer**：attention、token、embedding、position encoding（RoPE / ALiBi）、decoder-only、KV Cache
-- **训练流程**：pretraining → SFT → RLHF / DPO / KTO / ORPO / **GRPO**（DeepSeek-R1）/ RLAIF / Constitutional AI
-- **推理参数**：temperature、top_p、max tokens、streaming、latency、吞吐、上下文窗口
-- **模型类型**：base / instruction / **reasoning model（o1、R1 风格 long-CoT）** / embedding / reranker / reward model
-- **Inference-Time Scaling**：Best-of-N、Self-Consistency 投票、Process Reward Model (PRM)、Speculative Decoding
-- **能力边界**：幻觉、上下文遗忘、长文衰减（Lost in the Middle）、时序理解弱点、工具误用、非确定性
-- **Scaling Law、涌现能力**
-
----
-
-## Prompt Engineering
-
-目标：能稳定让模型按业务格式输出。
-
-- system / developer / user 指令分层
-- Zero-shot / Few-shot / 反例 / 风格迁移
-- **CoT、Self-Consistency、Self-Refine、Step-Back、Least-to-Most**
-- **JSON Mode、JSON Schema、Structured Output**
-- **Constrained Decoding**：Outlines、guidance、Pydantic / Zod
-- Prompt 版本管理、prompt diff、prompt regression test
-- **文案生成专项**：角色、语气、节奏、素材事实、禁止编造、改写与续写边界
-
----
-
-## Context Engineering
-
-目标：会设计"喂给模型什么上下文"，而不是只会写 prompt。
-
-- 上下文预算：进 prompt / 检索 / 丢弃 三分
-- 摘要压缩、分层上下文、滑动窗口、conversation state
-- **Lost in the Middle 现象与缓解**（重要文档放头尾）
-- **Prompt Caching**（Anthropic / OpenAI / Gemini / DeepSeek，命中能省 50–90%）
-- **Semantic Cache**（按语义相似度命中）
-- **长上下文 vs RAG 的取舍决策框架**
-- 多模态上下文：关键帧、字幕、ASR、OCR、镜头边界、人物、动作、音频事件
-- **Context ≠ Memory**：context 是本次推理材料，memory 是跨任务状态
-
-
----
-
-## 多模态专项
-
-- **视频切分**：shot detection、scene detection、keyframe extraction
-- **ASR**：语音转文字、说话人分离（diarization）、时间戳
-- **OCR**：字幕、屏幕文字
-- **视觉理解**：人物、动作、场景、物体、情绪、镜头运动
-- **音频理解**：音乐、笑声、尖叫、环境声、情绪转折
-- **Temporal Grounding**：某事发生在第几秒到第几秒
-- **Dense Captioning**：每个片段细粒度描述
-- **多模态 Embedding**：CLIP、SigLIP、Jina-CLIP、Nomic Embed Vision
-- **多模态模型选型**：Qwen2.5-VL、Gemini 1.5 / 2.5（长视频原生）、GPT-4o、InternVL、LLaVA-Video、Apollo、MiniCPM-V、VideoChat、LongVU
-- **视频 token 成本控制**：抽帧策略、clip、低/高 FPS、token merging、缓存
-- **长视频压缩思路**：VideoChat、LongVU、Video-Salmonn
-
----
-
 ## RAG
 
 目标：让模型基于可更新资料和案例写作，而不是凭参数记忆。
