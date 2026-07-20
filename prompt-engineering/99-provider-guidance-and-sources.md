@@ -176,7 +176,7 @@ sources:
 
 ## 相关笔记
 
-- [[00-overview|提示词工程总览]]
+- [[prompt-engineering/00-overview|提示词工程总览]]
 - [[10-context-and-instruction-architecture|上下文与指令架构]]
 - [[11-structured-output-and-determinism|结构化输出与确定性保证]]
 - [[14-evaluation-and-iteration|Prompt 评估与迭代]]

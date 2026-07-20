@@ -142,7 +142,7 @@ Context Builder 可以基于这些字段做权限过滤、去重、排序、过�
 
 ## 相关笔记
 
-- [[00-overview|上下文工程总览]]
+- [[context-engineering/00-overview|上下文工程总览]]
 - [[02-context-lifecycle|Context Lifecycle]]
 - [[05-context-assembly|Context Assembly]]
 - [[11-memory-engineering|Memory Engineering]]

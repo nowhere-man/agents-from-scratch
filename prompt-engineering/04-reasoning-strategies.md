@@ -378,7 +378,7 @@ ToT 是搜索算法，不等于“列出三种想法”。使用前必须定义�
 
 ## 相关笔记
 
-- [[00-overview|提示词工程总览]]
+- [[prompt-engineering/00-overview|提示词工程总览]]
 - [[02-minimum-effective-prompt|最小有效 Prompt]]
 - [[03-choose-the-right-lever|选择正确的工程杠杆]]
 - [[10-context-and-instruction-architecture|上下文与指令架构]]

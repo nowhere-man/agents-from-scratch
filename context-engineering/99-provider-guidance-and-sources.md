@@ -181,7 +181,7 @@ sources:
 
 ## 相关笔记
 
-- [[00-overview|上下文工程总览]]
+- [[context-engineering/00-overview|上下文工程总览]]
 - [[03-context-window-management|Context Window Management]]
 - [[11-memory-engineering|Memory Engineering]]
 - [[12-retrieval-engineering|Retrieval Engineering]]

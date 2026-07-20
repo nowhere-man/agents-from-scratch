@@ -174,7 +174,7 @@ flowchart TD
 
 ## 相关笔记
 
-- [[00-overview|提示词工程总览]]
+- [[prompt-engineering/00-overview|提示词工程总览]]
 - [[01-task-contract|任务契约]]
 - [[02-minimum-effective-prompt|最小有效 Prompt]]
 - [[11-structured-output-and-determinism|结构化输出与确定性保证]]

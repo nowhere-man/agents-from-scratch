@@ -161,7 +161,7 @@ sources:
 
 ## 相关笔记
 
-- [[00-overview|提示词工程总览]]
+- [[prompt-engineering/00-overview|提示词工程总览]]
 - [[02-minimum-effective-prompt|最小有效 Prompt]]
 - [[03-choose-the-right-lever|选择正确的工程杠杆]]
 - [[14-evaluation-and-iteration|Prompt 评估与迭代]]

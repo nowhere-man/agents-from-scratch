@@ -12,7 +12,7 @@ status: active
 created: 2026-07-17
 last_reviewed: 2026-07-17
 sources:
-  - "[[00-overview]]"
+  - "[[llm-basic/00-overview]]"
   - "[[05-from-base-model-to-assistant-model]]"
   - "[[07-limitations-and-failure-mechanisms]]"
 ---

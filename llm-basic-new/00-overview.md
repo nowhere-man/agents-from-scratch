@@ -4,13 +4,12 @@ aliases:
   - 大模型原理学习路线
 tags:
   - llm-basic
-  - overview
 status: active
 created: 2026-07-18
 last_reviewed: 2026-07-18
 ---
 
-# LLM 原理教程导读
+# LLM 导读
 
 > [!abstract] 目的
 >建立一套能够解释“大模型从哪里来、内部怎样工作、为什么有这些能力和边界”的完整认知。
@@ -43,7 +42,7 @@ flowchart LR
 3. [[03-transformer-and-modern-architecture|Transformer 与现代大模型架构]]
 4. [[04-how-a-base-model-is-created|基础模型怎样产生]]
 
-### 第二部分：基础模型怎样成为我们使用的模型
+### 第二部分：基础模型怎样成为我们使用的助手模型
 
 5. [[05-from-base-model-to-assistant|基础模型怎样成为助手模型]]
 
@@ -74,7 +73,7 @@ flowchart LR
 例如，你会看到下一个 Token 的概率：
 
 $$
-p(t_{next}mid t_1,t_2,ldots,t_n)
+p(t_{n+1} \mid t_1, t_2, \ldots, t_n)
 $$
 
 它不要求你进行计算。它只是在说：==模型根据前面已经看到的 Token，为下一个可能出现的 Token 分配概率。==

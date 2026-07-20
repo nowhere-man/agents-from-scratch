@@ -157,7 +157,7 @@ Few-shot 适合直接指令难以稳定表达的判断边界、格式或风格�
 
 ## 相关笔记
 
-- [[00-overview|提示词工程总览]]
+- [[prompt-engineering/00-overview|提示词工程总览]]
 - [[01-task-contract|任务契约]]
 - [[03-choose-the-right-lever|选择正确的工程杠杆]]
 - [[04-reasoning-strategies|推理增强策略]]
