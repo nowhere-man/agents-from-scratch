@@ -237,4 +237,4 @@ $$
 
 - [[05-from-base-model-to-assistant-model|从基础模型到 Assistant Model]]
 - [[06-capabilities-and-their-origins|模型能力及其来源]]
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]

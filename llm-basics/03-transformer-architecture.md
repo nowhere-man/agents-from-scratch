@@ -4,7 +4,6 @@ aliases:
   - Transformer 原理
 tags:
   - llm-basic
-  - transformer
 status: active
 created: 2026-07-18
 last_reviewed: 2026-07-20

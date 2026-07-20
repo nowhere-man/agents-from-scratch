@@ -5,8 +5,6 @@ aliases:
   - 大模型失败机制
 tags:
   - llm-basic
-  - limitations
-  - reliability
 status: active
 created: 2026-07-17
 last_reviewed: 2026-07-17
@@ -228,18 +226,3 @@ $$
 | 重复调用工具 | state、幂等、循环停止条件 | 让模型自行记住 |
 | 声称已经执行 | 是否有真实 tool result | 相信自然语言确认 |
 | 安全规则偶发失效 | 权限、数据边界与攻击 eval | 只追加拒绝提示 |
-
-## 概念检查
-
-- [ ] 能区分证据缺失、context 利用失败、推理失败和工具失败。
-- [ ] 能从 next-token objective 解释幻觉为什么不是偶发 bug。
-- [ ] 能说明模型自信和实际正确概率的差别。
-- [ ] 能列出 structured output 不保证的三件事。
-- [ ] 能解释为什么同一模型自检不是强验证。
-- [ ] 能把“模型会不会”改写成可测的系统问题。
-
-## 继续阅读
-
-- [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
-- [[09-multimodal-language-models|多模态大模型专项]]
-- [[99-technology-map-and-sources|技术地图与一手来源]]

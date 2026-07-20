@@ -278,5 +278,5 @@ Assistant Model 是一个输出分布经过后训练重塑的生成模型。与 
 ## 继续阅读
 
 - [[06-capabilities-and-their-origins|模型能力及其来源]]
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]
 - [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]

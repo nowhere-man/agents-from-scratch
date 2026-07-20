@@ -55,7 +55,7 @@ flowchart LR
 
 ### 第四部分：怎样正确使用模型
 
-10. [[30-llm-capabilities-boundaries-and-agents|模型能力、边界与 Agent]]
+10. [[31-llm-capabilities-boundaries-and-agents|模型能力、边界与 Agent]]
 
 ### 专题
 

@@ -48,13 +48,13 @@ sources:
 
 许多被统称为“prompt 技巧”的方法其实位于不同系统层。
 
-| 层 | 作用 | 代表方法 | 新增成本 |
-|---|---|---|---|
-| Prompt | 改变任务表达、示例或中间产物 | Few-shot、CoT、Step-Back | 上下文和输出 token |
-| Decomposition | 把复合任务变成有依赖关系的子任务 | Least-to-Most、Plan-and-Solve | 阶段、状态和传播错误 |
-| Sampling / Search | 生成并选择多条候选路径 | Self-Consistency、Best-of-N、ToT | 多次推理和评分 |
-| Workflow | 在生成、反馈、验证和恢复之间建立循环 | ReAct、Self-Refine、Reflexion | 调用、停止条件和状态 |
-| Tool / Runtime | 把事实、计算或校验交给外部能力 | Retrieval、PAL、Program of Thoughts、Verifier | 工具、权限和运行失败 |
+| 层                 | 作用                 | 代表方法                                       | 新增成本         |
+| ----------------- | ------------------ | ------------------------------------------ | ------------ |
+| Prompt            | 改变任务表达、示例或中间产物     | Few-shot、CoT、Step-Back                     | 上下文和输出 token |
+| Decomposition     | 把复合任务变成有依赖关系的子任务   | Least-to-Most、Plan-and-Solve               | 阶段、状态和传播错误   |
+| Sampling / Search | 生成并选择多条候选路径        | Self-Consistency、Best-of-N、ToT             | 多次推理和评分      |
+| Workflow          | 在生成、反馈、验证和恢复之间建立循环 | ReAct、Self-Refine、Reflexion                | 调用、停止条件和状态   |
+| Tool / Runtime    | 把事实、计算或校验交给外部能力    | Retrieval、PAL、Program of Thoughts、Verifier | 工具、权限和运行失败   |
 
 如果一种方法需要多次模型调用、状态、程序执行或候选聚合，就不要把它伪装成一段更长的 prompt。它应按 [[13-decomposition-and-agent-workflows|工作流]]设计和评估。
 

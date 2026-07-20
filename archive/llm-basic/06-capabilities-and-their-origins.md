@@ -218,7 +218,7 @@ Prompt sensitivity 一部分来自任务歧义，一部分来自模型在训练�
 
 ## 继续阅读
 
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]
 - [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
 - [[09-multimodal-language-models|多模态大模型专项]]
 

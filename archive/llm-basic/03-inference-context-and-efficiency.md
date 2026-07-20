@@ -249,5 +249,5 @@ $$
 ## 继续阅读
 
 - [[04-from-data-to-base-model|从数据到基础模型]]
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]
 - [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]

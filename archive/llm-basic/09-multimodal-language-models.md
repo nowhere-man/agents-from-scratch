@@ -304,5 +304,5 @@ flowchart LR
 
 - [[01-token-embedding-and-transformer|Token、Embedding 与 Transformer]]
 - [[03-inference-context-and-efficiency|推理、Context 与效率]]
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]
 - [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]

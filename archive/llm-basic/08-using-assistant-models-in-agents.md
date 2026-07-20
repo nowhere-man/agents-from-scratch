@@ -14,7 +14,7 @@ last_reviewed: 2026-07-17
 sources:
   - "[[archive/llm-basic/00-overview]]"
   - "[[05-from-base-model-to-assistant-model]]"
-  - "[[07-limitations-and-failure-mechanisms]]"
+  - "[[30-limitations-and-failure-mechanisms]]"
 ---
 
 # 在 Agent 中正确使用 Assistant Model
@@ -341,7 +341,7 @@ Agent 不应只有 `success` 和一段自由文本。常见状态包括：
 ## 相关笔记
 
 - [[05-from-base-model-to-assistant-model|从基础模型到 Assistant Model]]
-- [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]
+- [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]
 - [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]]
 - [[prompt-engineering/12-tools-state-and-authorization|工具、状态与授权边界]]
 - [[building-effective-agents|Building Effective Agents]]

@@ -12,7 +12,7 @@ created: 2026-07-17
 last_reviewed: 2026-07-17
 ---
 
-# 截至 2026 年 7 月的技术地图与一手来源
+# 截至 2026 年 7 月的技术地图与来源
 
 > [!abstract] 使用方式
 > 本文只按技术路线组织，不比较具体模型或厂商。论文用于说明方法与实验，不证明某项技术已成为所有生产模型的默认选择。正文中的“现代”表示截至核验日期仍有代表性的主流或前沿路线。
@@ -54,21 +54,21 @@ last_reviewed: 2026-07-17
 
 ## Attention、FFN、位置与混合架构
 
-| 主题 | 一手来源 | 技术特点 |
-|---|---|---|
-| MQA | [Fast Transformer Decoding](https://arxiv.org/abs/1911.02150) | 共享 KV head，减少自回归 decode 的 cache 与带宽 |
-| GQA | [GQA: Training Generalized Multi-Query Transformer Models](https://arxiv.org/abs/2305.13245) | 以多组 KV 在 MHA 与 MQA 间折中 |
-| IO-aware attention | [FlashAttention](https://arxiv.org/abs/2205.14135) | 分块与 IO 优化，数学上计算同类 attention |
-| 更高效的 IO-aware attention | [FlashAttention-2](https://arxiv.org/abs/2307.08691) | 改进并行划分和工作分配 |
-| 门控 FFN | [GLU Variants Improve Transformer](https://arxiv.org/abs/2002.05202) | 乘法门控增强逐位置非线性变换 |
-| 稀疏 MoE | [Switch Transformers](https://arxiv.org/abs/2101.03961) | 总容量与每 token 激活计算分离 |
-| RMSNorm | [Root Mean Square Layer Normalization](https://arxiv.org/abs/1910.07467) | 只按均方根缩放，简化归一化 |
-| RoPE | [RoFormer](https://arxiv.org/abs/2104.09864) | 对 query/key 旋转以表达相对位置 |
-| 线性偏置位置 | [Train Short, Test Long: ALiBi](https://arxiv.org/abs/2108.12409) | 直接对 attention score 加距离偏置 |
-| 选择性状态空间 | [Mamba](https://arxiv.org/abs/2312.00752) | 以输入相关状态更新实现线性序列建模 |
-| 混合状态空间 | [Transformers are SSMs](https://arxiv.org/abs/2405.21060) | 探索状态空间与 attention 类机制的统一/混合 |
-| Masked diffusion 语言模型 | [Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution](https://arxiv.org/abs/2310.16834) | 以迭代去噪/解遮挡代替严格左到右生成 |
-| Diffusion LLM 高效推理综述 | [Accelerating Masked Diffusion Large Language Models](https://arxiv.org/abs/2607.12829) | 截至 2026-07 的并行解码、步数与缓存优化路线综述 |
+| 主题                      | 一手来源                                                                                                              | 技术特点                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| MQA                     | [Fast Transformer Decoding](https://arxiv.org/abs/1911.02150)                                                     | 共享 KV head，减少自回归 decode 的 cache 与带宽 |
+| GQA                     | [GQA: Training Generalized Multi-Query Transformer Models](https://arxiv.org/abs/2305.13245)                      | 以多组 KV 在 MHA 与 MQA 间折中              |
+| IO-aware attention      | [FlashAttention](https://arxiv.org/abs/2205.14135)                                                                | 分块与 IO 优化，数学上计算同类 attention         |
+| 更高效的 IO-aware attention | [FlashAttention-2](https://arxiv.org/abs/2307.08691)                                                              | 改进并行划分和工作分配                         |
+| 门控 FFN                  | [GLU Variants Improve Transformer](https://arxiv.org/abs/2002.05202)                                              | 乘法门控增强逐位置非线性变换                      |
+| 稀疏 MoE                  | [Switch Transformers](https://arxiv.org/abs/2101.03961)                                                           | 总容量与每 token 激活计算分离                  |
+| RMSNorm                 | [Root Mean Square Layer Normalization](https://arxiv.org/abs/1910.07467)                                          | 只按均方根缩放，简化归一化                       |
+| RoPE                    | [RoFormer](https://arxiv.org/abs/2104.09864)                                                                      | 对 query/key 旋转以表达相对位置               |
+| 线性偏置位置                  | [Train Short, Test Long: ALiBi](https://arxiv.org/abs/2108.12409)                                                 | 直接对 attention score 加距离偏置           |
+| 选择性状态空间                 | [Mamba](https://arxiv.org/abs/2312.00752)                                                                         | 以输入相关状态更新实现线性序列建模                   |
+| 混合状态空间                  | [Transformers are SSMs](https://arxiv.org/abs/2405.21060)                                                         | 探索状态空间与 attention 类机制的统一/混合         |
+| Masked diffusion 语言模型   | [Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution](https://arxiv.org/abs/2310.16834) | 以迭代去噪/解遮挡代替严格左到右生成                  |
+| Diffusion LLM 高效推理综述    | [Accelerating Masked Diffusion Large Language Models](https://arxiv.org/abs/2607.12829)                           | 截至 2026-07 的并行解码、步数与缓存优化路线综述        |
 
 对应正文：[[02-modern-transformer-evolution|现代 Transformer 的模块演进]]。
 
@@ -113,7 +113,7 @@ last_reviewed: 2026-07-17
 | 间接注入 | [Not what you've signed up for](https://arxiv.org/abs/2302.12173) | 外部数据中的指令可影响工具增强模型 |
 | 语言模型校准 | [Language Models (Mostly) Know What They Know](https://arxiv.org/abs/2207.05221) | 校准依赖任务与表达方式，不能把自然语言信心当通用概率 |
 
-对应正文：[[06-capabilities-and-their-origins|模型能力及其来源]]、[[07-limitations-and-failure-mechanisms|能力边界与失败机制]]、[[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]。
+对应正文：[[06-capabilities-and-their-origins|模型能力及其来源]]、[[30-limitations-and-failure-mechanisms|能力边界与失败机制]]、[[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]。
 
 ## 多模态与视频
 

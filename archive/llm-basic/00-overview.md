@@ -68,7 +68,7 @@ flowchart LR
 ### 第三部分：模型的能力、特点与边界
 
 6. [[06-capabilities-and-their-origins|模型能力及其来源]]：语言、知识、in-context learning、推理、代码与工具使用为何会出现。
-7. [[07-limitations-and-failure-mechanisms|能力边界与失败机制]]：幻觉、知识限制、上下文退化、推理错误、提示敏感与不确定性。
+7. [[30-limitations-and-failure-mechanisms|能力边界与失败机制]]：幻觉、知识限制、上下文退化、推理错误、提示敏感与不确定性。
 
 ### 第四部分：在 Agent 中正确使用模型
 
