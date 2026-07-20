@@ -239,7 +239,24 @@ Embedding Table 不是人工把“下雨”写成一组有意义的数字。训�
 猫追狗
 ```
 
-两句包含相同 Token，但顺序不同。模型会先把位置相关信息加入或作用到初始向量上，得到第一层的输入状态。随后 Transformer 才逐层改写每个位置的表示。
+两句包含相同 Token，但顺序不同。仅靠 Token Embedding，模型只能知道“出现了狗、追、猫”，不知道谁在前谁在后；因此还必须为每个位置提供位置信息。
+
+### 位置 Embedding 怎样进入模型
+
+原始 Transformer 会为位置 `0`、`1`、`2` 等准备另一张可学习的 Position Embedding Table。它的每一行与 Token Embedding 具有相同维度。输入序列的第 `i` 个位置会查到两个向量：一个表示“这是什么 Token”，一个表示“它在第几个位置”，然后逐元素相加：
+
+$$
+h_i^{(0)} = E_{token}[t_i] + E_{position}[i]
+$$
+
+例如“狗 追 猫”中，“狗”会取自己的 Token Embedding，再加位置 `0` 的向量；“猫”会取自己的 Token Embedding，再加位置 `2` 的向量。因此，即使两句话含有相同 Token，它们送入后续网络的向量序列也不同。
+
+这就是常说的“Token Embedding + Position Embedding”。两张表一样都是训练中可学习的参数、推理时固定的权重；但它们回答不同问题：前者编码“是什么”，后者编码“在哪里”。相加后的 $h_i^{(0)}$ 是第 0 层输入状态，不是最终理解后的结果。
+
+> [!note] 现代 LLM 的常见做法
+> 并非所有模型都把位置向量直接加到 Token Embedding 上。许多现代 LLM 使用 RoPE 等位置编码，在 Attention 内部让位置影响 Token 之间的匹配关系。无论具体实现如何，目的都一样：让模型同时知道 Token 的内容和顺序。RoPE 怎样作用在 Attention 上，会在 [[04-modern-llm-architecture|现代 LLM 架构与基本原理]] 中展开。
+
+有了内容和位置信息，第 0 层输入状态才可以交给 Transformer；随后 Transformer 才逐层改写每个位置的表示。
 
 这个被逐层改写的内部向量叫 **Hidden State（隐藏状态）**。它不是额外存储的训练数据，也不是某个固定参数；它是一次前向计算中、每个位置在每一层的临时状态。“隐藏”只表示它是网络内部中间值，不是最终输出的文字。
 
@@ -255,7 +272,7 @@ Token ID
 因此，“吃了一个苹果”和“发布了新款苹果设备”中的“苹果”从相同的初始向量出发，却会得到不同的 Hidden State。最后一个位置的 Hidden State 经过输出层，才成为每个候选 Token 的分数（Logits），用于预测下一个 Token。
 
 > [!important] 本章和下一章的边界
-> 本章把训练样本构造到“初始向量进入模型”为止，并定义 Hidden State 是什么、为什么会出现。下一章 [[03-transformer-and-modern-architecture|Transformer 与现代架构]] 再解释模型具体怎样读取前文、更新状态并产生 Logits。
+> 本章把训练样本构造到“初始向量进入模型”为止，并定义 Hidden State 是什么、为什么会出现。下一章 [[03-transformer-architecture|Transformer 架构与基本原理]] 再解释模型具体怎样读取前文并更新状态。
 
 ## 本章闭环
 

@@ -6,7 +6,7 @@ tags:
   - llm-basic
 status: active
 created: 2026-07-18
-last_reviewed: 2026-07-18
+last_reviewed: 2026-07-20
 ---
 
 # LLM 导读
@@ -39,26 +39,27 @@ flowchart LR
 
 1. [[01-what-an-llm-really-does|大模型究竟在做什么]]
 2. [[02-from-text-to-training-data|文本怎样变成训练数据]]
-3. [[03-transformer-and-modern-architecture|Transformer 与现代大模型架构]]
-4. [[04-how-a-base-model-is-created|基础模型怎样产生]]
+3. [[03-transformer-architecture|Transformer 架构与基本原理]]
+4. [[04-modern-llm-architecture|现代 LLM 架构与基本原理]]
+5. [[05-how-a-base-model-is-created|基础模型怎样产生]]
 
 ### 第二部分：基础模型怎样成为我们使用的助手模型
 
-5. [[05-from-base-model-to-assistant|基础模型怎样成为助手模型]]
+6. [[06-from-base-model-to-assistant|基础模型怎样成为助手模型]]
 
 ### 第三部分：模型收到请求后怎样回答
 
-6. [[06-how-inference-produces-an-answer|一次推理怎样生成回答]]
-7. [[07-openai-api-request-anatomy|OpenAI API 请求由什么组成]]
-8. [[08-openai-api-parameters-and-effects|OpenAI API 参数究竟改变什么]]
+7. [[07-how-inference-produces-an-answer|一次推理怎样生成回答]]
+8. [[20-openai-api-request-anatomy|OpenAI API 请求由什么组成]]
+9. [[21-openai-api-parameters-and-effects|OpenAI API 参数究竟改变什么]]
 
 ### 第四部分：怎样正确使用模型
 
-9. [[09-llm-capabilities-boundaries-and-agents|模型能力、边界与 Agent]]
+10. [[30-llm-capabilities-boundaries-and-agents|模型能力、边界与 Agent]]
 
 ### 专题
 
-10. [[10-video-understanding-models|多模态视频理解模型原理]]
+11. [[90-video-understanding-models|多模态视频理解模型原理]]
 
 ## 公式应该怎样读
 
