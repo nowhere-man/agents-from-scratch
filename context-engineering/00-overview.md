@@ -78,7 +78,7 @@ flowchart LR
 - **Context 不等于 Prompt**：Prompt 主要定义目标和行为，context 还包含证据、历史、工具、计划和 workspace。
 - **Context Window 不等于有效容量**：API 接受输入不代表模型能稳定利用所有位置和全部细节。
 
-基础概念可结合 [[llm-basic/03-inference-context-and-efficiency|推理、Context 与效率]] 和 [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]] 阅读。
+基础概念可结合 [[03-inference-context-and-efficiency|推理、Context 与效率]] 和 [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]] 阅读。
 
 ## 快速决策表
 
@@ -138,5 +138,5 @@ flowchart LR
 
 - [[roadmap|AI Agents Roadmap]]
 - [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]]
-- [[llm-basic/03-inference-context-and-efficiency|推理、Context 与效率]]
-- [[llm-basic/08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
+- [[03-inference-context-and-efficiency|推理、Context 与效率]]
+- [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]

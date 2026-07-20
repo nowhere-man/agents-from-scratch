@@ -2,7 +2,8 @@
 title: 基础模型怎样产生
 aliases:
   - 参数权重与 Scaling Law
-tags: [llm-basic, pretraining, base-model]
+tags:
+  - llm-basic
 status: active
 created: 2026-07-18
 last_reviewed: 2026-07-18

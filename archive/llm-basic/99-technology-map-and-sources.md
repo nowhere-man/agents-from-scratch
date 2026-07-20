@@ -149,7 +149,7 @@ last_reviewed: 2026-07-17
 
 ## 阅读入口
 
-- [[llm-basic/00-overview|面向 Agent 开发的 LLM 基础]]
+- [[archive/llm-basic/00-overview|面向 Agent 开发的 LLM 基础]]
 - [[02-modern-transformer-evolution|现代 Transformer 的模块演进]]
 - [[05-from-base-model-to-assistant-model|从基础模型到 Assistant Model]]
 - [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]

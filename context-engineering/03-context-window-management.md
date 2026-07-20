@@ -149,5 +149,5 @@ Prompt Cache 或 Prefix Cache 复用稳定前缀的处理结果，主要降低�
 - [[04-context-selection|Context Selection]]
 - [[05-context-assembly|Context Assembly]]
 - [[10-conversation-context|Conversation Context]]
-- [[llm-basic/03-inference-context-and-efficiency|推理、Context 与效率]]
+- [[03-inference-context-and-efficiency|推理、Context 与效率]]
 

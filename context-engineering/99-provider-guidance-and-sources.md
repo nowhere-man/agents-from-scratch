@@ -136,8 +136,8 @@ sources:
 - [[prompt-engineering/10-context-and-instruction-architecture|上下文与指令架构]]
 - [[prompt-engineering/12-tools-state-and-authorization|工具、状态与授权边界]]
 - [[prompt-engineering/13-decomposition-and-agent-workflows|任务拆解与 Agent 工作流]]
-- [[llm-basic/03-inference-context-and-efficiency|推理、Context 与效率]]
-- [[llm-basic/08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
+- [[03-inference-context-and-efficiency|推理、Context 与效率]]
+- [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
 - [[agent-skills/prompt-engineering/references/long-context.md|Long Context 参考]]
 - [[agent-skills/prompt-engineering/references/runtime.md|Runtime 参考]]
 

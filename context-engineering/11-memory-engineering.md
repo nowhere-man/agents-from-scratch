@@ -178,5 +178,5 @@ Memory retrieval 应结合：
 - [[10-conversation-context|Conversation Context]]
 - [[12-retrieval-engineering|Retrieval Engineering]]
 - [[14-planning-context|Planning Context]]
-- [[llm-basic/08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
+- [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
 
