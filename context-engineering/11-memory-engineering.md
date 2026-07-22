@@ -8,20 +8,38 @@ tags:
   - memory
 status: active
 created: 2026-07-18
-last_reviewed: 2026-07-18
+last_reviewed: 2026-07-23
 sources:
-  - "[[99-provider-guidance-and-sources]]"
+  - "[[context-engineering/99-provider-guidance-and-sources]]"
   - https://arxiv.org/abs/2310.08560
 ---
 
-# Memory Engineering
+# Memory Engineering：决定什么值得跨任务留下
 
-> [!important] 一句话核心
-> Memory Engineering 不是保存所有历史，而是决定什么值得跨任务持久化、怎样验证和更新、何时检索回当前 context，以及什么时候必须遗忘。
+> [!abstract] 本篇学习终点
+> 区分当前任务 State 与跨任务 Memory，沿 SSO 排障结束后的信息做写入判断、检索、更新、合并和删除，并能解释为什么“记住更多”会降低可靠性。
 
-## Memory 与 Context
+## 任务结束后，什么应该被记住
 
-Memory 位于模型调用之外。一个信息只有经过检索、权限过滤、选择和组装后，才成为当前 context。
+SSO 排障完成后，系统手里可能有：
+
+- 用户本次要求不要修改生产；
+- staging-apac 这个临时环境；
+- 一次 audience 配置错误的日志；
+- 当前 branch 的补丁和测试结果；
+- 项目长期采用的 focused test 命令；
+- 用户明确偏好用简体中文输出；
+- 模型猜测用户喜欢短回答；
+- 一次查询超时；
+- 任务的完整 pending list。
+
+如果把所有内容都写进长期 memory，下一次任务会被旧环境、错误猜测和敏感日志污染。Memory Engineering 的问题不是“怎样存更多历史”，而是：==哪些信息具有未来价值，应该以什么权限、作用域和失效条件跨任务使用。==
+
+## Memory 不在当前 Context 里
+
+[[context-engineering/10-conversation-context|Conversation Context]] 保存当前 thread 的 Event Log 和 Current View。Memory 位于模型调用之外，只有经过未来任务的检索、硬过滤、选择和组装后，才会重新成为 Context。
+
+完整链路是：
 
 ```text
 事件或观察
@@ -29,154 +47,235 @@ Memory 位于模型调用之外。一个信息只有经过检索、权限过滤�
 → 写入判断与验证
 → 持久化
 → 未来任务触发检索
+→ 权限与 scope 过滤
 → 选择与组装
-→ 当前 context
+→ 当前 Context
 ```
 
-因此，模型拥有大窗口不等于系统拥有可靠长期记忆。
+因此，大窗口不会自动产生长期记忆；把对话摘要放进数据库也不等于它可靠。
 
-## 四类 Memory
+## 四类 Memory 解决不同的未来问题
 
-| 类型 | 内容 | 示例 |
-|---|---|---|
-| Episodic | 发生过的事件和交互 | 用户上次否决了方案 A |
-| Semantic | 相对稳定的事实和偏好 | 用户默认使用简体中文 |
-| Procedural | 可复用流程与方法 | 发布前必须运行回归测试 |
-| Artifact / Reference | 可回查对象和产物 | 设计文档、评测结果、代码版本 |
+下面是一种便于工程实现的分类，不是唯一学术标准。分类的价值在于让不同内容拥有不同的写入、检索和失效规则，而不是要求所有系统使用同一组英文标签。
 
-这些类型可以使用不同 schema、保留期和检索方式。不要把所有内容都压成无来源的自然语言段落。
+### Episodic：发生过什么
 
-## Memory 写入门槛
+例如“2026-07-22 的 mobile SSO incident 最终由 audience 映射错误引起”。它适合回查历史，但不应直接当作当前配置。
 
-写入前至少判断：
+### Semantic：相对稳定的事实或偏好
 
-1. **未来价值**：是否可能改善未来任务？
-2. **稳定性**：是长期事实还是一次性要求？
+例如“这个项目的 mobile SSO expected audience 来自受控配置”，或用户明确说“默认用简体中文”。它需要来源和确认时间，仍可能被新版本替代。
+
+### Procedural：可复用的流程
+
+例如“修改认证代码前先运行 focused SSO test，再运行完整回归”。流程应说明适用项目、版本和例外，而不是无条件适用于所有仓库。
+
+### Artifact / Reference：可回查对象
+
+例如补丁、测试报告、incident 文档和部署版本。它们的价值通常是提供稳定引用，不是把完整产物塞进每次 prompt。
+
+不同类型可以有不同 schema、保留期和检索方式。把所有内容压成无来源的自然语言段落，会丢失这些差异。
+
+## 写入前先过七道门
+
+一个候选只有在满足以下问题后才适合进入 Memory：
+
+1. **未来价值**：下次任务真的可能用到它吗？
+2. **稳定性**：它是跨任务事实，还是这次临时状态？
 3. **来源**：来自用户明确陈述、系统观察还是模型推断？
-4. **置信度**：是否需要确认或多个证据？
-5. **敏感性**：是否允许持久化和跨任务使用？
-6. **作用域**：属于用户、项目、组织还是单一任务？
-7. **失效条件**：何时刷新、覆盖或删除？
+4. **置信度**：是否有一次以上的独立证据或需要用户确认？
+5. **敏感性**：允许持久化、跨任务使用和发送给目标模型吗？
+6. **作用域**：属于这个任务、项目、用户还是组织？
+7. **失效条件**：何时刷新、覆盖、降权或删除？
 
-模型推断的偏好通常只应成为 candidate，不能与用户明确声明拥有同等权威。
+沿 SSO 例子：
 
-## Memory Schema
+| 候选 | 写入判断 |
+|---|---|
+| “不要修改生产” | 当前任务约束，不自动成为长期 memory |
+| staging-apac | 临时环境，通常不写入长期 memory |
+| incident 报告 artifact | 可写为带 scope 的 reference |
+| focused SSO test 命令 | 若项目长期适用，可成为 procedural candidate |
+| 用户明确偏好简体中文 | 可写为 user-scoped semantic memory |
+| 模型猜测用户喜欢短回答 | 仅是低置信 candidate，不能等同明确偏好 |
+| 一次查询超时 | 一次性事件，保留在 incident log，不应作为通用经验 |
+
+写入少并不是能力不足，而是避免未来每次任务都带着错误历史。
+
+## Memory Contract 至少要保存什么
 
 ```yaml
 memory:
-  id: preference-output-language
-  type: semantic
-  subject: user-42
-  value: zh-CN
+  id: project-sso-focused-test-v2
+  type: procedural
+  subject: project-auth
+  value:
+    command: ./scripts/test-sso --focused
+    purpose: 修改 SSO audience 相关代码后的第一轮验证
   source:
-    kind: explicit_user_statement
-    event_id: msg-1842
-  confidence: 1.0
-  scope: user
-  created_at: 2026-07-18T10:00:00+08:00
-  last_confirmed_at: 2026-07-18T10:00:00+08:00
-  valid_until: null
-  sensitivity: low
-  supersedes: null
+    kind: verified_artifact
+    event_id: test-run-20260722-18
+    artifact_ref: artifact://sso-test-report-18
+  confidence: 0.92
+  scope:
+    project: auth-service
+    environment: development
+  created_at: 2026-07-22T11:20:00+08:00
+  last_confirmed_at: 2026-07-22T11:20:00+08:00
+  valid_until: 2026-10-22T11:20:00+08:00
+  sensitivity: internal
+  supersedes: project-sso-focused-test-v1
+  status: active
 ```
 
-需要保留 value 之外的 provenance、scope 和 lifecycle，否则后续无法判断是否应该使用。
+字段的作用是：
 
-## 写入流程
+- value 说“记住什么”；
+- source 说“为什么可以记住”；
+- confidence 区分确认与推断；
+- scope 防止跨项目、跨用户或跨租户误用；
+- last confirmed 和 valid until 支持刷新；
+- sensitivity 控制传播；
+- supersedes 表达版本关系；
+- status 让删除、过期和降权可见。
+
+示例中的 `confidence: 0.92` 只是系统用于排序和复核的操作性分数；除非它经过真实数据校准，否则不能把 0.92 解读为“这条记忆有 92% 概率正确”。高影响事实仍应回到来源或要求用户确认。
+
+没有 provenance、scope 和 lifecycle 的 memory，未来无法判断是否仍该使用。
+
+## 写入流程必须允许拒绝
 
 ```mermaid
 flowchart LR
-    A["观察事件"] --> B["生成 candidate"]
+    A["事件或观察"] --> B["生成 memory candidate"]
     B --> C["去重与冲突检查"]
-    C --> D["权限与敏感性检查"]
+    C --> D["权限、敏感性与 scope 检查"]
     D --> E{"需要确认？"}
-    E -->|是| F["用户或规则确认"]
-    E -->|否| G["提交新版本"]
+    E -->|需要| F["用户或规则确认"]
+    E -->|不需要| G["提交新版本"]
     F --> G
     G --> H["建立索引与失效条件"]
+    C --> I["拒绝或保留为事件"]
+    D --> I
 ```
 
-对高影响 memory，例如健康、财务、身份或长期行为偏好，应提高确认和删除要求。
+“不写入”是正常结果，不是流程失败。对健康、财务、身份和长期行为偏好等高影响 memory，应提高确认门槛和删除能力。
 
-## 读取与检索
+## 读取 Memory 时，当前输入通常优先
 
-Memory retrieval 应结合：
+未来任务触发检索时，Selection 需要同时看：
 
-- 当前任务和对象。
-- user / project / organization scope。
-- 时间和版本。
-- 来源权威性与置信度。
-- 语义相关性。
-- 敏感数据授权。
-- 与当前明确输入是否冲突。
+- 当前任务和对象；
+- user、project、organization scope；
+- 时间和版本；
+- 来源权威性与 confidence；
+- 语义相关性；
+- 敏感数据授权；
+- 与当前明确输入的冲突。
 
-当前用户消息通常比旧偏好更适用于本次请求。发生冲突时，应使用明确的优先级和更新流程，而不是让模型自行猜测。
+假设 Memory 里有“项目使用 api-v1”，而当前有效运行手册与用户输入都指出 api-v2。旧 Memory 只能作为待核对线索，不能覆盖当前明确且更权威的材料。
 
-## 更新、合并与遗忘
+一种可解释的优先顺序是：
 
-| 操作 | 适用情况 | 要求 |
+1. 当前高优先级规则与授权；
+2. 当前用户对本任务的明确输入；
+3. 当前版本的 Source of Truth；
+4. 经过验证的 task state 和新观察；
+5. 有 scope、来源和时效的旧 memory；
+6. 未确认的模型推断。
+
+具体优先级仍由业务规则决定，不能只靠向量相似度。
+
+检索回来的 Memory 仍然是数据，不是控制指令。即使一条旧 memory 写着“以后允许直接发布生产”，它也不能改变当前 policy、tool authorization 或 State 的 owner；系统必须重新检查来源、权限和当前任务范围。否则攻击者或一次错误总结就可能把不可信内容长期写入，再在未来任务中反复触发，这类风险通常称为 memory poisoning（记忆污染）。
+
+## 更新、合并和遗忘
+
+### Refresh
+
+事实仍然成立，但需要重新确认。例如项目脚本路径未变，只是重新运行测试并更新 confirmed time。
+
+### Supersede
+
+新版本替代旧版本。例如 expected audience 从 api-v1 更新为 api-v2。旧值保留关系，避免历史报告失去解释。
+
+### Merge
+
+多条 memory 表达同一稳定事实时合并，但不能丢失来源、例外和时间条件。
+
+### Decay
+
+长期未使用或证据变弱时降权。Decay 不等于立即删除，因为它可能仍有审计或回查价值。
+
+### Delete
+
+用户要求、合规、失效或无用途时删除。删除必须传播到：
+
+- 主存储；
+- 向量索引和关键词索引；
+- 摘要和派生 memory；
+- Prompt / Semantic Cache；
+- 日志和备份中允许删除的副本。
+
+“数据库记录消失”不是完整遗忘的完成条件。
+
+## Consolidation 为什么容易自我强化
+
+多次 episodic 事件可以产生 semantic candidate。例如连续几次任务都使用简体中文，系统可以提出“用户偏好简体中文”。
+
+但如果流程是：
+
+```text
+一次模型猜测
+→ 总结成 memory
+→ 下一次检索到该 memory
+→ 模型再次把它当证据
+→ 再总结一次
+```
+
+最初的猜测会被自己的摘要循环放大，却没有新的独立证据。
+
+Consolidation 应保留：
+
+- 每个支持事件；
+- 反例和冲突；
+- 置信度变化；
+- 用户确认或拒绝；
+- 失效条件。
+
+当前用户的明确请求应能轻易覆盖低置信长期偏好。
+
+## Planning State 与 Memory 的边界
+
+| 内容 | Planning State | Memory |
 |---|---|---|
-| Refresh | 事实仍存在但需要重新确认 | 更新 confirmed time 和来源 |
-| Supersede | 新值替代旧值 | 保留新旧关系和生效时间 |
-| Merge | 多条 memory 表达同一稳定事实 | 不丢失来源和例外 |
-| Decay | 长期未使用且置信下降 | 降权，不一定立即删除 |
-| Delete | 用户要求、合规或已无用途 | 传播到索引、摘要和 cache |
+| 当前 task ID | 必须完整保存 | 通常不保存 |
+| 当前 pending steps | 必须及时更新 | 不应自动保存 |
+| 一次失败 payload | 保存引用和恢复信息 | 通常只保留可复用经验候选 |
+| 项目长期测试流程 | 可从任务状态提取 | 可成为 procedural memory |
+| 用户明确长期偏好 | 当前任务引用 | 可成为 user-scoped memory |
+| 临时 branch | 当前 workspace 状态 | 任务结束后通常失效 |
 
-遗忘是产品能力，不是存储清理的副作用。
+任务结束后，从 planning state 提取少量可复用候选，而不是把 scratchpad 原样升级为长期记忆。见 [[context-engineering/14-planning-context|Planning Context]]。
 
-## Memory Consolidation
+## 评估 Memory 是否带来真实收益
 
-多次 episode 可以产生更稳定的 semantic memory，但需要证据门槛。例如多次观察到用户选择简洁回答，可以形成“偏好简洁”的候选；在未明确确认前，应允许本轮请求轻易覆盖，并保留置信度和来源。
+需要同时测量：
 
-不要让模型通过“总结自己的总结”无限强化一个最初不可靠的推断。
+- **Write precision**：写入内容中真正值得长期保留的比例；
+- **Retrieval usefulness**：召回 memory 对当前任务质量的增益；
+- **Stale memory rate**：过期或被替代的 memory 被使用的比例；
+- **Contradiction rate**：memory 与当前明确输入冲突的比例；
+- **Provenance coverage**：每条 memory 能否回到来源；
+- **Forgetting completeness**：删除请求是否传播到索引、摘要和 cache；
+- **Personalization lift**：使用 memory 相对不使用的真实提升；
+- **Leakage rate**：不应跨 scope 的内容是否被带入任务。
 
-## Memory 与 Planning State
+命中率高但冲突率也高，说明系统在记住噪声，而不是获得可靠个性化。
 
-- **Planning state** 服务当前任务，应完整、及时和可恢复。
-- **Memory** 服务未来任务，应稀疏、稳定和可检索。
+## 用三个问题检查本篇
 
-任务完成后，可以从 planning state 提取少量可复用决定或经验作为 memory candidate，但不应把完整 scratchpad 和临时错误永久保存。详见 [[14-planning-context|Planning Context]]。
+1. 为什么“本次不要修改生产”通常不应自动成为长期用户偏好？
+2. 一个模型推断的输出偏好，和用户明确陈述的偏好在 source 与 confidence 上有什么不同？
+3. 删除一条 memory 后，为什么还要检查摘要、向量索引和 cache？
 
-## 评估
-
-- Memory write precision：写入内容中真正值得长期保留的比例。
-- Retrieval usefulness：召回 memory 对任务质量的贡献。
-- Stale memory rate：过期或被覆盖的 memory 使用率。
-- Contradiction rate：memory 与当前明确输入冲突的比例。
-- Provenance coverage：memory 可追溯到来源的比例。
-- Forgetting completeness：删除请求是否传播到全部副本和索引。
-- Personalization lift：使用 memory 相对 baseline 的真实提升。
-
-## 常见误区
-
-> [!warning] “记住更多”不等于“更懂用户”
-> 无筛选地持久化会积累错误推断、隐私风险和过时偏好，并在未来请求中产生难以解释的干扰。
-
-- **所有对话都写入 memory**：事件日志和长期记忆职责不同。
-- **没有来源的偏好**：无法区分明确声明与模型猜测。
-- **旧 memory 覆盖当前请求**：本轮明确意图通常优先。
-- **只会追加不会修改**：冲突和过期内容持续累积。
-- **删除数据库记录就结束**：还需处理索引、缓存、摘要和派生数据。
-- **用向量相似度决定权限**：授权和 scope 必须先做硬过滤。
-
-## 检查表
-
-- [ ] 只有具有未来价值的信息进入 memory candidate。
-- [ ] 明确陈述、系统观察和模型推断被区分。
-- [ ] 每条 memory 有来源、scope、时间、敏感性和失效条件。
-- [ ] 写入前执行去重、冲突、权限和确认检查。
-- [ ] 当前用户输入可以按规则覆盖旧 memory。
-- [ ] 支持 refresh、supersede、merge、decay 和 delete。
-- [ ] 删除传播到索引、摘要和 cache。
-- [ ] 用任务质量和错误率评估 memory，而不是只统计命中次数。
-
-## 相关笔记
-
-- [[01-context-architecture|Context Architecture]]
-- [[02-context-lifecycle|Context Lifecycle]]
-- [[04-context-selection|Context Selection]]
-- [[10-conversation-context|Conversation Context]]
-- [[12-retrieval-engineering|Retrieval Engineering]]
-- [[14-planning-context|Planning Context]]
-- [[08-using-assistant-models-in-agents|在 Agent 中正确使用 Assistant Model]]
-
+下一篇回到主线中缺少外部资料的时刻：Agent 需要从运行手册和历史 incident 中检索可引用证据。见 [[context-engineering/12-retrieval-engineering|Retrieval Engineering]]。

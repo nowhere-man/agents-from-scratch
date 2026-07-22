@@ -8,209 +8,333 @@ tags:
   - planning
 status: active
 created: 2026-07-18
-last_reviewed: 2026-07-18
+last_reviewed: 2026-07-23
 sources:
-  - "[[99-provider-guidance-and-sources]]"
+  - "[[context-engineering/99-provider-guidance-and-sources]]"
 ---
 
-# Planning Context
+# Planning Context：让长任务能够继续、停止和恢复
 
-> [!important] 一句话核心
-> Planning Context 是可外部检查和恢复的任务控制面：它保存目标、步骤、决定、证据、错误、预算和完成条件，而不是保存模型不可验证的私有思维过程。
+> [!abstract] 本篇学习终点
+> 为 SSO 排障建立一个可外部检查的 planning state，沿执行、失败、压缩和恢复的过程保存目标、步骤、决定、证据、预算和停止条件；同时理解它为什么不是模型私有思维过程的转录。
 
-## Planning Context 解决什么
+## 对话和工具都准备好以后，为什么仍会迷路
 
-长任务会跨越多次模型调用、tool result、窗口压缩和人工反馈。如果只依赖最近对话，系统容易：
+SSO 排障可能跨越：
 
-- 忘记原始目标或成功标准。
-- 重复已经完成的动作。
-- 丢失用户批准、禁止事项或失败记录。
-- 在相同错误上反复重试。
-- 把局部步骤完成误判为整个任务完成。
+1. 复现 mobile 登录失败；
+2. 排除数据库连接问题；
+3. 检索并核对 SSO 运行手册；
+4. 查询 staging-apac 的运行时配置；
+5. 找到最小代码修改点；
+6. 运行 focused test 与完整回归（检查修改是否破坏相关已有行为）；
+7. 输出补丁、证据和风险说明。
 
-Planning Context 把继续任务所需的信息从易失 conversation 中提取为可信 state。
+如果只依赖最近对话，Agent 很容易：
+
+- 忘记最初的“不修改生产”；
+- 重复已经完成的日志查询；
+- 在同一个超时上无限重试；
+- 把局部步骤完成当成整个任务完成；
+- 压缩窗口后不知道下一个动作；
+- 把模型提出的猜测写成已验证事实。
+
+Planning Context 是任务的外部控制面：==保存继续任务所需的可验证状态，而不是保存模型不可检查的私有推理文本。==
+
+模型可以提出计划、调整步骤或总结失败原因，但程序仍要校验字段、证据、授权和当前版本，再把候选写入 planning state。这样保存的是可检查的执行接口，不是模型内部逐字展开的思维过程。
+
+## 先分清目标的五个层级
+
+一个可执行计划不能只有“继续排查”。下面是一组实用层级，字段名可以变化，但从最终目的到可验证动作的依赖不能省略：
+
+| 层级 | 要回答的问题 | SSO 例子 |
+|---|---|---|
+| Objective | 最终为什么做？ | 修复 SSO 用户登录失败 |
+| Outcome | 完成后什么为真？ | mobile 请求按当前规则生成 token 并通过测试 |
+| Phase | 当前处于哪一阶段？ | 验证根因 |
+| Step | 下一项可执行动作是什么？ | 比较 expected 与 actual audience |
+| Check | 如何证明这一步完成？ | 两个值和来源版本已确认 |
+
+每层都需要可观察的完成条件。模糊目标会让模型生成看似合理却无法停止的行动。
 
 ## 最小 Planning State
 
 ```yaml
 plan:
-  task_id: context-docs-20260718
-  objective: 创建并验证 Context Engineering 文档专题
-  success_criteria:
-    - 十三篇目标文档存在
-    - 十一类主题全部覆盖
-    - frontmatter 与 wikilinks 验证通过
-  current_phase: implementation
+  task_id: sso-login-fix-42
+  objective: 修复 SSO 用户登录失败
+  outcome:
+    - 根因由至少两项证据支持
+    - 补丁只修改必要文件
+    - focused test 与相关回归通过
+    - 未执行生产写入
+  current_phase: root_cause_validation
+  current_step: inspect_runtime_audience
   completed:
-    - 分析 roadmap
-    - 用户批准目录设计
+    - reproduce_failure
+    - rule_out_database
   in_progress:
-    - 编写文档
+    - compare_runbook_with_runtime_config
   pending:
-    - 验证链接
-    - 最终审阅
+    - locate_minimal_patch
+    - run_focused_test
+    - run_regression
   decisions:
-    - 十一主题一类一篇
+    - id: decision-focus-mobile
+      choice: 只调查 mobile SSO
+      rationale: web 对照请求成功
+      evidence_refs:
+        - log-sso-mobile-20260722
+        - log-sso-web-success-20260722
+      invalidated_by:
+        - 新证据显示 web 也失败
+  unknowns:
+    - identity_service_runtime_config_version
   blockers: []
   budgets:
-    token: null
-    time: null
+    attempts_remaining: 2
+    time_remaining_minutes: 30
+    token_reserve: 4000
   authorization:
-    external_publish: false
+    production_write: false
+  checkpoints:
+    - id: checkpoint-after-reproduction
+      artifact_ref: artifact://sso-reproduction-42
+  version: 7
 ```
 
-它不需要记录每个语言模型内部推理 token，只需记录可验证的决定和外部状态。
-
-## 目标层级
-
-| 层级 | 问题 | 示例 |
-|---|---|---|
-| Objective | 最终为什么做？ | 修复登录失败 |
-| Outcome | 完成后什么为真？ | SSO 用户能成功登录 |
-| Phase | 当前处于哪一阶段？ | 诊断 root cause |
-| Step | 下一项可执行动作是什么？ | 比较失败与成功 token |
-| Check | 如何证明步骤完成？ | audience 差异已被证据确认 |
-
-每层都应有可观察的完成条件。模糊的“继续调查”“优化结果”无法支持可靠停止。
+它不需要保存每一个内部推理 token，但需要保存决定、来源、版本、失败和下一步，以便别人或下一次模型检查。
 
 ## Plan 与执行循环
 
 ```mermaid
 flowchart LR
-    A["读取目标与 state"] --> B["选择下一步"]
-    B --> C["获取所需 context"]
-    C --> D["执行或调用 tool"]
-    D --> E["验证观察"]
-    E --> F["更新 plan 和证据"]
-    F --> G{"满足完成/停止条件？"}
+    A["读取 objective 与当前 state"] --> B["选择下一 step"]
+    B --> C["为 step 选择 Context"]
+    C --> D["执行或调用 Tool"]
+    D --> E["验证真实 observation"]
+    E --> F["更新 plan、证据与 checkpoint"]
+    F --> G{"达到完成或停止条件？"}
     G -->|否| B
-    G -->|是| H["交付或升级"]
+    G -->|是| H["交付、升级或结束"]
 ```
 
-Plan 不是一次生成后永久不变。新证据、用户修正和失败会触发重新规划，但修改需要保留原因和版本。
+每次循环都要有“下一步为什么是它”的理由。新证据、用户修正、失败或预算变化可以触发 replanning（根据当前事实重新安排步骤）；计划不是一次生成后永久不变。
 
-## 决策与证据
+### 计划的输入不是完整历史
 
-重要决定应记录：
+读取计划时，Context Builder 还要根据当前 step 选择：
 
-- 选择了什么。
-- 为什么选择。
-- 基于哪些 evidence ID。
-- 排除了哪些替代方案。
-- 哪些假设仍未验证。
+- 当前目标与约束；
+- 相关 evidence ID；
+- 必要 tool 定义；
+- workspace snapshot；
+- 上一次失败和替代策略；
+- 完成条件。
+
+把整个父任务、所有日志和所有 tool payload 复制给每一步，会增加 token 和串线风险。
+
+## 决策要和证据绑定
+
+“采用方案 B”不是足够的决定记录。至少保存：
+
+- 选择了什么；
+- 为什么；
+- 基于哪些 evidence ID；
+- 排除了哪些替代方案；
+- 哪些假设仍未验证；
 - 什么事件会使决定失效。
 
-这比只记录“已决定用方案 B”更容易在 context compaction 后恢复，也更容易审查。
+例如：
 
-## Checkpoint
+```yaml
+decision:
+  id: use-config-mapping-patch
+  choice: 修正 mobile audience 映射，不改 token 验证算法
+  rationale: 运行时 actual audience 与规则不一致，验证代码本身通过 web 对照
+  evidence_refs:
+    - runbook-sso-v4#audience
+    - log-sso-mobile-20260722
+    - log-sso-web-success-20260722
+  rejected:
+    - database-retry-change
+    - production-config-write
+  assumptions:
+    - staging 配置与生产配置可独立验证
+  invalidated_by:
+    - 运行时查询显示映射已正确
+```
 
-在以下时机保存 checkpoint：
+这样，窗口压缩后仍能判断为什么选择当前路径，而不是重新猜测。
 
-- 完成一个阶段。
-- 即将压缩、清空或切换 context。
-- 高成本或高风险动作之前和之后。
-- 用户批准或修改目标之后。
-- 外部系统返回不可重复结果之后。
-- 发生需要改变策略的错误之后。
+## Checkpoint 是恢复接口，不是日志堆
 
-Checkpoint 应引用大型 artifact，而不是把全部输出复制进 state。
+应在以下时机保存 checkpoint：
 
-## Compaction 前的恢复包
+- 完成一个阶段；
+- 即将压缩、清空或切换窗口；
+- 高成本或高风险动作前后；
+- 用户批准或修改目标后；
+- 外部系统返回不可重复结果后；
+- 发生需要改变策略的错误后。
+
+Checkpoint 应引用大型 artifact，而不是把全部输出复制进 planning state。
+
+### 压缩前的最小恢复包
 
 ```yaml
 recovery:
-  task_id: incident-1842
-  objective: 找到支付失败 root cause
-  current_step: validate_gateway_timeout
+  task_id: sso-login-fix-42
+  state_version: 7
+  objective: 修复 SSO 用户登录失败
+  current_phase: patch_validation
+  current_step: run_focused_test
   completed_steps:
     - reproduce_failure
-    - rule_out_database
+    - confirm_audience_mismatch
+    - create_local_patch
   open_questions:
-    - timeout 是否只发生在 region-a
+    - focused test 是否覆盖 staging-apac 的 client mapping
   evidence_refs:
-    - trace-9f2a
-    - deploy-20260718
+    - runbook-sso-v4#audience
+    - log-sso-mobile-20260722
+    - patch-diff@snapshot-19
   last_error:
-    code: LOG_QUERY_TIMEOUT
+    code: TEST_FIXTURE_MISSING
     attempts: 1
+    changed_strategy: 使用现有 integration fixture（集成测试所需的固定数据与环境），不再重试缺失文件
   next_action:
-    tool: query_metrics
-    rationale: 日志查询失败，改用聚合指标验证区域差异
+    tool: run_focused_test
+    rationale: 验证补丁而非继续猜测根因
+  authorization:
+    production_write: false
+  workspace_snapshot: snapshot-19
 ```
 
-恢复时重新验证 task ID、版本、权限和 workspace 当前状态。
+恢复时重新验证 task ID、State version、权限和当前 workspace。State version 表示规划记录本身是第几版；workspace snapshot 表示某一时刻的文件、branch、diff 与测试环境。两者变化原因不同，不能用同一个数字互相替代。也不能假设磁盘、branch 或外部服务仍与 checkpoint 创建时相同。
 
-## 并行与子任务隔离
+## 错误记录必须推动策略变化
 
-只有互不依赖的子任务才并行。每个子任务应拥有：
+每次失败至少记录：
 
-- 局部 objective 和 success criteria。
-- 只需要的 context slice。
-- 明确的读写权限。
-- 结构化结果和 evidence references。
-- 合并阶段需要的冲突与未知项。
+- 时间、步骤和输入版本；
+- error code 与是否可恢复；
+- 已尝试方法和结果；
+- 下一次必须改变的假设、参数、工具或数据源；
+- 剩余次数、时间、token 和副作用预算；
+- 何时停止或升级。
 
-不要把父任务的完整 context 无差别复制给所有 worker；这增加成本、污染和敏感信息暴露。
+同一个 error code 重复出现时，检查是否真的改变了策略。重试次数增加不是 progress。
 
-## 错误与停止条件
+### 停止条件来自哪些边界
 
-记录每次失败的：
+应在计划中明确：
 
-- 时间、步骤和输入版本。
-- 错误类型及是否可恢复。
-- 已尝试的方法和结果。
-- 下一次必须改变的假设或策略。
-- 剩余次数、时间和成本预算。
+- 重复失败阈值；
+- 授权范围；
+- 时间、token 和成本上限；
+- 缺少不可替代的输入；
+- 观察结果不确定且有副作用；
+- 成功标准已经满足。
 
-达到重复失败阈值、授权边界、预算上限或缺少必要输入时，应明确停止或向用户升级。
+例如，identity config 写操作出现 unknown outcome 时，计划应转入“查询真实状态并请求批准”，而不是继续发送相同写请求。见 [[context-engineering/13-tool-context|Tool Context]]。
 
-## Planning Artifact 与 Memory
+## 并行与子任务需要隔离
 
-- Planning artifact 为当前任务服务，应详细保存执行状态。
-- 任务结束后，只将具有跨任务价值的决定、偏好或经验提取为 [[11-memory-engineering|memory candidate]]。
-- 临时 scratch、失败 payload 和一次性计划不应自动成为长期 memory。
+只有互不依赖的工作才适合并行。这里的 worker 是执行一个局部任务的模型或程序实例；context slice 是从父任务中切出的、完成该局部目标所必需的最小上下文。
 
-## 评估
+- 一个 worker 读取 runbook；
+- 一个 worker 分析本地代码；
+- 一个 worker 汇总历史 incident。
 
-- Goal retention：长任务中目标和约束是否保持。
-- Duplicate action rate：重复执行已完成动作的比例。
-- Recovery success：中断后是否从正确步骤继续。
-- Plan completion accuracy：声明完成时是否满足全部标准。
-- Replanning quality：新证据出现后是否合理更新计划。
-- Error diversity：重试是否改变假设或方法。
-- Context isolation：子任务是否只接收必要材料。
-- State token cost：Planning Context 注入开销。
+每个子任务需要自己的：
 
-## 常见误区
+- 局部 objective 和 success criteria；
+- context slice；
+- 读写权限；
+- 输入与输出 schema；
+- evidence references；
+- 冲突、未知和失败结果。
 
-> [!warning] Plan 不是内部思维过程的转录
-> 系统需要的是可检查的目标、决定、状态和证据，不需要保存模型不可验证、冗长且可能误导的私有推理文本。
+父任务不能把完整对话、敏感日志和生产授权无差别复制给每个 worker。合并阶段要保留来源和冲突，不能用多数意见自动当作事实。
 
-- **只有 todo list**：缺少成功标准、证据和停止条件。
-- **计划生成后不再更新**：新信息出现后继续执行旧假设。
-- **完成步骤等于完成目标**：必须逐条验证 outcome。
-- **失败后从头重跑**：浪费已验证状态并可能重复副作用。
-- **所有 worker 共享完整 context**：增加污染和权限风险。
-- **把 planning state 当 memory**：临时任务细节不应永久保存。
+## 完成声明必须验证 Outcome
 
-## 检查表
+以下状态不是同一件事：
 
-- [ ] Objective、outcome、phase、step 和 check 层级清楚。
-- [ ] 当前状态包含 completed、in-progress、pending 和 blockers。
-- [ ] 重要决定引用 evidence，并记录失效条件。
-- [ ] 压缩和中断前保存最小恢复包。
-- [ ] 错误记录尝试次数，并要求下一次改变策略。
-- [ ] 并行子任务具有独立 context、权限和结果契约。
-- [ ] 完成声明逐项核对全部 success criteria。
-- [ ] 任务结束后只提取少量长期 memory candidate。
+- patch file 已写入；
+- focused test 通过；
+- 相关回归通过；
+- 根因有证据；
+- 用户限制没有被违反；
+- 任务所有 success criteria 满足。
 
-## 相关笔记
+Plan 应逐项检查 outcome：
 
-- [[01-context-architecture|Context Architecture]]
-- [[03-context-window-management|Context Window Management]]
-- [[10-conversation-context|Conversation Context]]
-- [[11-memory-engineering|Memory Engineering]]
-- [[13-tool-context|Tool Context]]
-- [[15-workspace-context|Workspace Context]]
-- [[prompt-engineering/13-decomposition-and-agent-workflows|任务拆解与 Agent 工作流]]
+```yaml
+completion_check:
+  task_id: sso-login-fix-42
+  criteria:
+    - id: evidence-backed-root-cause
+      status: passed
+      evidence_refs:
+        - log-sso-mobile-20260722
+        - runbook-sso-v4#audience
+    - id: minimal-diff
+      status: passed
+      evidence_refs:
+        - patch-diff@snapshot-19
+    - id: focused-test
+      status: passed
+      evidence_refs:
+        - test-report-22
+    - id: no-production-write
+      status: verified
+      evidence_refs:
+        - authorization-log-42
+  result: complete
+```
 
+“完成了五个步骤”不能替代“最终结果满足四个标准”。
+
+## Planning Artifact 与 Memory 不同
+
+Planning artifact 为当前任务服务，应详细、及时且可恢复；Memory 为未来任务服务，应稀疏、稳定、带 scope。
+
+任务结束后可以提取：
+
+- 一条经验证的项目测试流程；
+- 一个可回查的 incident artifact；
+- 用户明确的长期输出偏好。
+
+不应自动提取：
+
+- 完整 scratchpad（执行过程中产生的临时草稿、尝试和未验证推断）；
+- 临时 branch 和路径；
+- 一次失败 payload；
+- 未确认的推理；
+- 当前 pending list。
+
+提取流程见 [[context-engineering/11-memory-engineering|Memory Engineering]]。
+
+## 怎样评估 Planning Context
+
+- **Goal retention**：长任务中目标和约束保留率；
+- **Duplicate action rate**：重复已完成动作的比例；
+- **Recovery success**：中断后从正确步骤继续的比例；
+- **Plan completion accuracy**：声明完成时实际满足标准的比例；
+- **Replanning quality**：新证据出现后计划是否合理更新；
+- **Error diversity**：重试是否改变方法和假设；
+- **Context isolation**：子任务是否只收到必要材料；
+- **State token cost**：恢复状态带来的输入开销；
+- **Stop precision**：该停止时停止、该继续时不误停。
+
+计划越长不代表越可靠；可验证接口、证据和停止条件才是关键。
+
+## 用三个问题检查本篇
+
+1. 为什么 planning state 需要保存 decision 的 evidence refs 和失效条件？
+2. 窗口压缩前，恢复包至少要让下一次模型知道哪些字段？
+3. 为什么“所有步骤都标记完成”仍不能直接声明整个任务完成？
+
+下一篇把计划带回真实代码环境：文件、branch、diff、终端和测试都可能在计划之间变化。见 [[context-engineering/15-workspace-context|Workspace Context]]。
